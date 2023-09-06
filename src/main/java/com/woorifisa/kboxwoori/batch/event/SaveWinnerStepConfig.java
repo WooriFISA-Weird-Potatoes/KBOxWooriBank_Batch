@@ -4,6 +4,7 @@ import com.woorifisa.kboxwoori.batch.event.processor.SaveWinnerProcessor;
 import com.woorifisa.kboxwoori.batch.event.reader.SaveWinnerReader;
 import com.woorifisa.kboxwoori.batch.event.writer.EventNotificationWriter;
 import com.woorifisa.kboxwoori.batch.event.writer.SaveWinnerWriter;
+import com.woorifisa.kboxwoori.global.DateTimeJobParameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -21,6 +22,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @Slf4j
@@ -32,6 +34,7 @@ public class SaveWinnerStepConfig {
     private final RedisTemplate<String, String> redisTemplate;
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
+    private final DateTimeJobParameter dateTimeJobParameter;
 
     @Bean
     @JobScope
@@ -40,7 +43,7 @@ public class SaveWinnerStepConfig {
                 .<String, Long>chunk(100)
                 .reader(saveWinnerReader(null))
                 .processor(saveWinnerProcessor())
-                .writer(compositeItemWriter(null))
+                .writer(eventCompositeItemWriter(null))
                 .build();
     }
 
@@ -58,7 +61,7 @@ public class SaveWinnerStepConfig {
 
     @Bean
     @StepScope
-    public CompositeItemWriter<Long> compositeItemWriter(@Value("#{jobParameters['eventId']}") Long eventId) {
+    public CompositeItemWriter<Long> eventCompositeItemWriter(@Value("#{jobParameters['eventId']}") Long eventId) {
         CompositeItemWriter<Long> itemWriter = new CompositeItemWriter<Long>();
         itemWriter.setDelegates(Arrays.asList(saveWinnerWriter(eventId), eventNotificationWriter(eventId)));
         return itemWriter;
@@ -71,6 +74,7 @@ public class SaveWinnerStepConfig {
 
     @StepScope
     public ItemWriter<Long> eventNotificationWriter(Long eventId) {
-        return new EventNotificationWriter(eventId, dataSource);
+        final LocalDateTime dateTime = dateTimeJobParameter.getDateTime();
+        return new EventNotificationWriter(eventId, dataSource, dateTime);
     }
 }

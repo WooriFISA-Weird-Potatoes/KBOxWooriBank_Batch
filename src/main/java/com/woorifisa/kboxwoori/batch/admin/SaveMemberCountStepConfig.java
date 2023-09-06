@@ -2,6 +2,7 @@ package com.woorifisa.kboxwoori.batch.admin;
 
 import com.woorifisa.kboxwoori.batch.admin.reader.SaveMemberCountReader;
 import com.woorifisa.kboxwoori.batch.admin.writer.SaveMemberCountWriter;
+import com.woorifisa.kboxwoori.global.DateJobParameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.time.LocalDate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class SaveMemberCountStepConfig {
     private final StepBuilderFactory stepBuilderFactory;
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
+    private final DateJobParameter dateJobParameter;
 
     @Bean
     @JobScope
@@ -44,6 +47,7 @@ public class SaveMemberCountStepConfig {
     @Bean
     @StepScope
     public ItemWriter<Integer> saveMemberCountWriter() {
-        return new SaveMemberCountWriter(dataSource);
+        final LocalDate date = dateJobParameter.getDate();
+        return new SaveMemberCountWriter(dataSource, date);
     }
 }

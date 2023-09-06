@@ -16,6 +16,7 @@ import java.util.Map;
 public class CalcPredictionReader implements ItemReader<Map.Entry<Object, Object>> {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final LocalDate date;
 
     private static final int COUNT = 100;
     private static final String PREDICTION_KEY = "prediction:";
@@ -25,7 +26,7 @@ public class CalcPredictionReader implements ItemReader<Map.Entry<Object, Object
     @PostConstruct
     public void init() {
         ScanOptions options = ScanOptions.scanOptions().count(COUNT).build();
-        this.cursor = redisTemplate.opsForHash().scan(PREDICTION_KEY + LocalDate.now(), options);
+        this.cursor = redisTemplate.opsForHash().scan(PREDICTION_KEY + date.minusDays(1), options);
     }
 
     @Override

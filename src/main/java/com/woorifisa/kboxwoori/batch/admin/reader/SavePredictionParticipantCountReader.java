@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class SavePredictionParticipantCountReader implements ItemReader<Long> {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final LocalDate date;
 
     private static final String PREDICTION_KEY = "prediction:";
 
@@ -21,7 +22,7 @@ public class SavePredictionParticipantCountReader implements ItemReader<Long> {
     public Long read() {
         if (!isRead) {
             isRead = true;
-            return redisTemplate.opsForHash().size(PREDICTION_KEY + LocalDate.now());
+            return redisTemplate.opsForHash().size(PREDICTION_KEY + date.minusDays(1));
         }
 
         return null;

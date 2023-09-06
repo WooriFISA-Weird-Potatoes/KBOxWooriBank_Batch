@@ -20,6 +20,7 @@ import java.util.List;
 public class UpdatePointHistoryWriter implements ItemWriter<UserPrediction> {
 
     private final DataSource dataSource;
+    private final LocalDateTime dateTime;
 
     private static final String UPDATE_POINT_HISTORY_SQL = "INSERT INTO point_history (user_id, status_code, point, created_at) VALUES (?, ?, ?, ?)";
     private static final String POINT_HISTORY_STATUS = "SAVE";
@@ -35,7 +36,7 @@ public class UpdatePointHistoryWriter implements ItemWriter<UserPrediction> {
                         ps.setLong(1, item.getId());
                         ps.setString(2, POINT_HISTORY_STATUS);
                         ps.setInt(3, item.getExtraPoints());
-                        ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                        ps.setTimestamp(4, Timestamp.valueOf(dateTime));
                     }
                 })
                 .build();

@@ -6,6 +6,8 @@ import com.woorifisa.kboxwoori.batch.prediction.writer.PredictionNotificationWri
 import com.woorifisa.kboxwoori.batch.prediction.writer.SavePredictionResultWriter;
 import com.woorifisa.kboxwoori.batch.prediction.writer.UpdatePointHistoryWriter;
 import com.woorifisa.kboxwoori.batch.prediction.writer.UpdatePointWriter;
+import com.woorifisa.kboxwoori.global.DateJobParameter;
+import com.woorifisa.kboxwoori.global.DateTimeJobParameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -22,6 +24,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -34,8 +38,9 @@ public class CalcPredictionStepConfig {
     private final RedisTemplate<String, String> redisTemplate;
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
+    private final DateJobParameter dateJobParameter;
+    private final DateTimeJobParameter dateTimeJobParameter;
 
-    //TODO: job parameter date 추가
     @Bean
     @JobScope
     public Step calcPredictionStep() {
@@ -43,25 +48,27 @@ public class CalcPredictionStepConfig {
                 .<Map.Entry<Object, Object>, UserPrediction>chunk(100)
                 .reader(calcPredictionReader())
                 .processor(calcPredictionProcessor())
-                .writer(compositeItemWriter())
+                .writer(predictionCompositeItemWriter())
                 .build();
     }
 
     @Bean
     @StepScope
     public ItemReader<Map.Entry<Object, Object>> calcPredictionReader() {
-        return new CalcPredictionReader(redisTemplate);
+        final LocalDate date = dateJobParameter.getDate();
+        return new CalcPredictionReader(redisTemplate, date);
     }
 
     @Bean
     @StepScope
     public ItemProcessor<Map.Entry<Object, Object>, UserPrediction> calcPredictionProcessor() {
-        return new CalcPredictionProcessor(redisTemplate, jdbcTemplate);
+        final LocalDate date = dateJobParameter.getDate();
+        return new CalcPredictionProcessor(redisTemplate, jdbcTemplate, date);
     }
 
     @Bean
     @StepScope
-    public CompositeItemWriter<UserPrediction> compositeItemWriter() {
+    public CompositeItemWriter<UserPrediction> predictionCompositeItemWriter() {
         CompositeItemWriter<UserPrediction> itemWriter = new CompositeItemWriter<UserPrediction>();
         itemWriter.setDelegates(Arrays.asList(updatePointWriter(), updatePointHistoryWriter(), savePredictionResultWriter(), predictionNotificationWriter()));
         return itemWriter;
@@ -74,16 +81,19 @@ public class CalcPredictionStepConfig {
 
     @StepScope
     public ItemWriter<UserPrediction> updatePointHistoryWriter() {
-        return new UpdatePointHistoryWriter(dataSource);
+        final LocalDateTime dateTime = dateTimeJobParameter.getDateTime();
+        return new UpdatePointHistoryWriter(dataSource, dateTime);
     }
 
     @StepScope
     public ItemWriter<UserPrediction> savePredictionResultWriter() {
-        return new SavePredictionResultWriter(dataSource);
+        final LocalDate date = dateJobParameter.getDate();
+        return new SavePredictionResultWriter(dataSource, date);
     }
 
     @StepScope
     public ItemWriter<UserPrediction> predictionNotificationWriter() {
-        return new PredictionNotificationWriter(dataSource);
+        final LocalDateTime dateTime = dateTimeJobParameter.getDateTime();
+        return new PredictionNotificationWriter(dataSource, dateTime);
     }
 }

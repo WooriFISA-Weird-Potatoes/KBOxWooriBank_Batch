@@ -19,6 +19,7 @@ import java.util.List;
 public class SavePredictionParticipantCountWriter implements ItemWriter<Long> {
 
     private final DataSource dataSource;
+    private final LocalDate date;
 
     private static final String SAVE_PREDICTION_PARTICIPANT_COUNT_SQL = "UPDATE user_statistics SET prediction_participants = ? WHERE created_at = ?";
 
@@ -31,7 +32,7 @@ public class SavePredictionParticipantCountWriter implements ItemWriter<Long> {
                     @Override
                     public void setValues(Long item, PreparedStatement ps) throws SQLException {
                         ps.setInt(1, item.intValue());
-                        ps.setDate(2, Date.valueOf(LocalDate.now()));
+                        ps.setDate(2, Date.valueOf(date));
                     }
                 })
                 .build();

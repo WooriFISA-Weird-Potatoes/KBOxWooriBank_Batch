@@ -20,6 +20,7 @@ import java.util.List;
 public class PredictionNotificationWriter implements ItemWriter<UserPrediction> {
 
     private final DataSource dataSource;
+    private final LocalDateTime dateTime;
 
     private static final String NOTIFICATION_TYPE = "P";
     private static final String SAVE_NOTIFICATION_SQL = "INSERT INTO notification (user_id, type, created_at, is_checked, metadata) VALUES (?, ?, ?, ?, ?)";
@@ -34,7 +35,7 @@ public class PredictionNotificationWriter implements ItemWriter<UserPrediction> 
                     public void setValues(UserPrediction item, PreparedStatement ps) throws SQLException {
                         ps.setLong(1, item.getId());
                         ps.setString(2, NOTIFICATION_TYPE);
-                        ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+                        ps.setTimestamp(3, Timestamp.valueOf(dateTime));
                         ps.setBoolean(4, false);
                         ps.setLong(5, item.getExtraPoints());
                     }

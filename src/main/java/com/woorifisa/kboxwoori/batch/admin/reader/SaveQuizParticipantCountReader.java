@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class SaveQuizParticipantCountReader implements ItemReader<Long> {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final LocalDate date;
 
     private static final String QUIZ_KEY = "quiz:participant:";
 
@@ -21,7 +22,7 @@ public class SaveQuizParticipantCountReader implements ItemReader<Long> {
     public Long read() {
         if (!isRead) {
             isRead = true;
-            return redisTemplate.opsForSet().size(QUIZ_KEY + LocalDate.now());
+            return redisTemplate.opsForSet().size(QUIZ_KEY + date.minusDays(1));
         }
 
         return null;
