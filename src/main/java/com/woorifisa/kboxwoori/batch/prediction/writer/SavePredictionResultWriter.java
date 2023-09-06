@@ -20,6 +20,7 @@ import java.util.List;
 public class SavePredictionResultWriter implements ItemWriter<UserPrediction> {
 
     private final DataSource dataSource;
+    private final LocalDate date;
 
     private static final String SAVE_PREDICTION_RESULT_SQL = "INSERT INTO prediction_history (user_id, is_correct, created_at) VALUES (?, ?, ?)";
 
@@ -33,7 +34,7 @@ public class SavePredictionResultWriter implements ItemWriter<UserPrediction> {
                     public void setValues(UserPrediction item, PreparedStatement ps) throws SQLException {
                         ps.setLong(1, item.getId());
                         ps.setBoolean(2, item.getExtraPoints() != 0);
-                        ps.setDate(3, Date.valueOf(LocalDate.now()));
+                        ps.setDate(3, Date.valueOf(date.minusDays(1)));
                     }
                 })
                 .build();

@@ -19,6 +19,7 @@ import java.util.List;
 public class SaveMemberCountWriter implements ItemWriter<Integer> {
 
     private final DataSource dataSource;
+    private final LocalDate date;
 
     private static final String SAVE_MEMBER_COUNT_SQL = "INSERT INTO user_statistics (total_users, created_at) VALUES (?, ?)";
 
@@ -31,7 +32,7 @@ public class SaveMemberCountWriter implements ItemWriter<Integer> {
                     @Override
                     public void setValues(Integer item, PreparedStatement ps) throws SQLException {
                         ps.setInt(1, item);
-                        ps.setDate(2, Date.valueOf(LocalDate.now()));
+                        ps.setDate(2, Date.valueOf(date));
                     }
                 })
                 .build();

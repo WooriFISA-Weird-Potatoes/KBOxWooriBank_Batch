@@ -19,6 +19,7 @@ import java.util.List;
 public class SaveQuizParticipantCountWriter implements ItemWriter<Long> {
 
     private final DataSource dataSource;
+    private final LocalDate date;
 
     private static final String SAVE_QUIZ_PARTICIPANT_COUNT_SQL = "UPDATE user_statistics SET quiz_participants = ? WHERE created_at = ?";
 
@@ -31,7 +32,7 @@ public class SaveQuizParticipantCountWriter implements ItemWriter<Long> {
                     @Override
                     public void setValues(Long item, PreparedStatement ps) throws SQLException {
                         ps.setInt(1, item.intValue());
-                        ps.setDate(2, Date.valueOf(LocalDate.now()));
+                        ps.setDate(2, Date.valueOf(date));
                     }
                 })
                 .build();

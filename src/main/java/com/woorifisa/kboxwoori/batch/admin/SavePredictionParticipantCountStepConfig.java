@@ -2,6 +2,7 @@ package com.woorifisa.kboxwoori.batch.admin;
 
 import com.woorifisa.kboxwoori.batch.admin.reader.SavePredictionParticipantCountReader;
 import com.woorifisa.kboxwoori.batch.admin.writer.SavePredictionParticipantCountWriter;
+import com.woorifisa.kboxwoori.global.DateJobParameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.sql.DataSource;
+import java.time.LocalDate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class SavePredictionParticipantCountStepConfig {
     private final StepBuilderFactory stepBuilderFactory;
     private final RedisTemplate<String, String> redisTemplate;
     private final DataSource dataSource;
+    private final DateJobParameter dateJobParameter;
 
     @Bean
     @JobScope
@@ -38,12 +41,14 @@ public class SavePredictionParticipantCountStepConfig {
     @Bean
     @StepScope
     public ItemReader<Long> savePredictionParticipantCountReader() {
-        return new SavePredictionParticipantCountReader(redisTemplate);
+        final LocalDate date = dateJobParameter.getDate();
+        return new SavePredictionParticipantCountReader(redisTemplate, date);
     }
 
     @Bean
     @StepScope
     public ItemWriter<Long> savePredictionParticipantCountWriter() {
-        return new SavePredictionParticipantCountWriter(dataSource);
+        final LocalDate date = dateJobParameter.getDate();
+        return new SavePredictionParticipantCountWriter(dataSource, date);
     }
 }

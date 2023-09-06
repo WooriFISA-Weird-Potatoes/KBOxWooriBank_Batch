@@ -18,6 +18,7 @@ public class CalcPredictionProcessor implements ItemProcessor<Map.Entry<Object, 
 
     private final RedisTemplate<String, String> redisTemplate;
     private final JdbcTemplate jdbcTemplate;
+    private final LocalDate date;
 
     private static final String TODAY_SCHEDULE_KEY = "crawling:todaySchedule:";
     private static final String FIND_USER_SQL = "SELECT id FROM users WHERE user_id = ?";
@@ -27,7 +28,7 @@ public class CalcPredictionProcessor implements ItemProcessor<Map.Entry<Object, 
     @PostConstruct
     public void init() {
         winningTeams = new ArrayList<>();
-        Set<String> keys = redisTemplate.keys(TODAY_SCHEDULE_KEY + LocalDate.now() + "-?");
+        Set<String> keys = redisTemplate.keys(TODAY_SCHEDULE_KEY + date.minusDays(1) + "-?");
         if (keys != null) {
             getWinningTeams(keys);
             log.info("winningTeams = {}", winningTeams);
